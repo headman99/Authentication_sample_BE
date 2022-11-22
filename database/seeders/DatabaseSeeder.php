@@ -20,5 +20,10 @@ class DatabaseSeeder extends Seeder
         //     'name' => 'Test User',
         //     'email' => 'test@example.com',
         // ]);
+        $this->call(products_groups_seeder::class);
+        $this->call(menu_seeder::class);
+        $this->call(products_table_seeder::class);
+        $this->call(menu_receips_seeder::class);
+        $this->call(admin_seeder::class);
     }
 }

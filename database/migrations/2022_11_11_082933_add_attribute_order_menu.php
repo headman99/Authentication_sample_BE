@@ -13,11 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('api_token', 80)->after('password')
-            ->unique()
-            ->nullable()
-            ->default(null);
+        Schema::table('orders_menu', function (Blueprint $table) {
+            $table->timestamp("closed_at")->nullable()->default(NULL);
         });
     }
 
@@ -28,6 +25,6 @@ return new class extends Migration
      */
     public function down()
     {
-        
+        //
     }
 };

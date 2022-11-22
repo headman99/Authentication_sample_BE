@@ -10,8 +10,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\ApiTokenController;
-use Cookie;
 
 class AuthController extends Controller
 {
@@ -86,14 +84,33 @@ class AuthController extends Controller
         }
     }
 
-    public function accessToken(Request $request)
-    {
-        return response(['accessToken' => $request->user()->tokens[0]]);
-    }
-
     public function csrfToken()
     {
-        return csrf_token();
+        return response(['token' => csrf_token()]);
+    }
+
+    public function registerClient(Request $request)
+    {
+        $request->validate([
+            'username' => 'required',
+            'password' => 'required'
+        ]);
+        try {
+            $password = Hash::make($request->password);
+            $username = $request->username;
+
+            $user = User::create([
+                'username' => $username,
+                'password' => $password,
+                'api_token' => hash('sha256', Str::random(60)),
+                'isadmin' => false
+            ]);
+
+            return response(['user' => new UserResource($user)]);
+        } catch (\Exception $exc) {
+            Log::error($exc->getMessage());
+            return response(['errore' => $exc->getMessage()], \Illuminate\Http\Response::HTTP_BAD_REQUEST);
+        }
     }
 
 }

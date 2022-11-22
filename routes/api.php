@@ -1,8 +1,11 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProducerController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\UserController;
 use App\Http\Resources\UserResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -24,43 +27,52 @@ Route::group(['guest'], function () {
     Route::get('/', [AuthController::class, 'welcome']);
     Route::post('/login', [AuthController::class, 'login']);
     Route::get('/sanctum/csrfToken',[AuthController::class,'csrfToken']);
+    Route::post('/registerAdmin', [AuthController::class, 'registerAdmin'])->middleware('guest');
+    Route::post('/registerClient', [AuthController::class, 'registerClient'])->middleware('guest');
 });
 
 
 /*** AMDIN ***/
 Route::group(['middleware' => ['admin','auth:sanctum']], function () {
-
+    Route::post('/admin/registerIngredient', [AdminController::class, 'registerIngredient']);
+    Route::get('/admin/stocks', [AdminController::class, 'getStock']);
+    Route::post('/admin/removeIngredient', [AdminController::class, 'removeIngredient']);
+    Route::post('/admin/updateIngredientQuantity', [AdminController::class, 'updateIngredientQuantity']);
+    Route::post('/admin/updateIngredientDescription', [AdminController::class, 'updateIngredientDescription']);
+    Route::post('/admin/addIngredientQuantity', [AdminController::class, 'addIngredientQuantity']);
+    Route::get('/admin/getProductsCatalog', [AdminController::class, 'getProductsCatalog']);
+    Route::post('/admin/removeProduct', [AdminController::class, 'removeProduct']);
+    Route::post('/admin/registerProduct', [AdminController::class, 'registerProduct']);
+    Route::get('/admin/getProductGroups', [AdminController::class, 'getProductGroups']);
+    Route::post("/admin/addMenuRecipe", [AdminController::class, "addMenuRecipe"]);
+    Route::post('/admin/removeMenuRecipe', [AdminController::class, 'removeMenuRecipe']);
+    Route::post('/admin/updateMenuRecipeGroup', [AdminController::class, 'updateMenuRecipeGroup']);
+    Route::post('/admin/updateMenuRecipeSection', [AdminController::class, 'updateMenuRecipeSection']);
+    Route::post('/admin/removeMenuRecipeSection', [AdminController::class, 'removeMenuRecipeSection']);
+    Route::post("/admin/getOrdersList" , [AdminController::class, "getOrdersList"] );
+    Route::post("/admin/getOrdersListByDate" , [AdminController::class, "getOrdersListByDate"] );
+    Route::post("/admin/getOpenProductsInstance",[AdminController::class, "getOpenProductsInstance"]);
+    Route::post("/admin/getOrderListCodes",[AdminController::class, "getOrderListCodes"]);
 });
 
 /*** CLIENT ***/
 Route::group(['middleware' => ['client','auth:sanctum']], function () {
+    Route::post('/client/addOrderMenu', [CustomerController::class,"addOrderMenu"]);
     
 });
 
 /*** GENERAL ***/
 Route::group(['middleware' => 'auth:sanctum'], function(){
-    Route::get('/accessToken',[AuthController::class, 'accessToken']);
     Route::get('/logout', [AuthController::class, 'logout']);
+    Route::get('/csrfToken',[AuthController::class, 'csrfToken']);
+    Route::post("/user/getMenuCatalog", [UserController::class, "getMenuCatalog"]);
+    Route::get('/user/getMenuDetails', [UserController::class, 'getMenuDetails']);
 });
 
 /***API TOKEN AUTHENTICATION 
  * Tutte le route che non possono essere autenticate con l'accessToken ma che hanno bisogno lo stesso di autenticazione, viene usata l'api_token di ogni user.
  * ***/
 
-Route::group(['middleware' => 'auth:sanctum'], function () {
-    Route::get('/message', function (Request $request) {
-        return response(['message' => 'authenticated correctly']);
-    })->middleware(['auth:api']);
-    
+Route::group(['middleware' => 'auth:api'], function () {
+
 });
-
-Route::get('/check', function(){
-
-    if(Auth::check()){
-        return response(['message' => 'yes']);
-    }else{
-        return response(['message' => 'no']);
-    }
-})->middleware('auth:sanctum');
-
-Route::post('/registerAdmin', [AuthController::class, 'registerAdmin'])->middleware('guest');

@@ -1,6 +1,6 @@
 <?php
 
-/*use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use App\Http\Controllers\AuthController;
 /*use App\Http\Controllers\ProducerController;
@@ -21,30 +21,6 @@ use Illuminate\Support\Facades\Log;*/
 */
 
 
-/*
-Route::group(['middleware' => 'guest'], function () {
-    Route::get('/', [AuthController::class, 'welcome']);
-    Route::post('/login', [AuthController::class, 'login']);
-});
 
 
 
-Route::group(['middleware' => ['admin','auth:api']], function () {
-
-});
-
-
-Route::group(['middleware' => ['client','auth:api']], function () {
-    
-});
-
-
-Route::group(['middleware' => 'auth'], function(){
-    Route::post('/token',function(Request $request){
-        return response(['token'=>Auth::user()->getRememberToken()]);
-    });
-    Route::get('/logout', [AuthController::class, 'logout']);
-});
-
-
-Route::post('/registerAdmin', [AuthController::class, 'registerAdmin'])->middleware('guest');*/
