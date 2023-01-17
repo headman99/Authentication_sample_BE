@@ -21,10 +21,14 @@ use App\Models\User;
 use Carbon\Carbon;
 use Hamcrest\Arrays\IsArray;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use PHPUnit\TextUI\XmlConfiguration\Groups;
+
+use function PHPUnit\Framework\isEmpty;
+use function PHPUnit\Framework\isNull;
 
 class AdminController extends Controller
 {
@@ -369,32 +373,68 @@ class AdminController extends Controller
     {
         $validate = $request->validate([
             "range" => "sometimes|nullable|integer",
-            "start_from" => "sometimes|nullable|integer"
+            "start_from" => "sometimes|nullable|integer",
+            "start_date" => "sometimes|nullable",
+            "end_date" => "sometimes|nullable",
+            "closed" => "sometimes|nullable"
         ]);
 
         try {
             $range = isset($request->range) ? $request->range : 50;
+            $skip = isset($request->start_from) ? $request->start_from : 0;
             $data = [];
-            if (!isset($request->start_from)) {
-                $data = Order_menu::whereNull("closed_at")->limit($range)->orderBy("created_at", "desc")->get();
-            } else {
-                $data = Order_menu::whereNull("closed_at")->orderBy("created_at", "desc")->skip($request->start_from)->take($range)->get();
+            $filter_date_condition = [];
+
+
+
+            if (isset($request->start_date)) {
+                array_push(
+                    $filter_date_condition,
+                    ["created_at", ">=", $request->start_date]
+                );
             }
 
-            /*$orders = [];
-            foreach ($data as $order) {
-                array_push($orders, [
-                    "client" => User::find($order["client_id"])->username,
-                    "created_at" =>  Carbon::parse($order["created_at"])->format('d/m/Y H:i:s'),
-                    "code" => $order["code"],
-                    "id" => $order["id"],
-                    "menu_id" => $order["menu_id"],
-                    "quantity" => $order["quantity"],
-                    "richiesta" => $order["richiesta"],
-                ]);
-            }*/
+
+            if (isset($request->end_date)) {
+                array_push(
+                    $filter_date_condition,
+                    ["created_at", "<=", Carbon::parse($request->end_date)->addDay()]
+                );
+            }
+
+            if (!$request->closed) {
+                if (sizeof($filter_date_condition) > 0) {
+                    $data = Order_menu::whereNull("closed_at")
+                        ->where($filter_date_condition)
+                        ->orderBy("created_at", "desc")
+                        ->skip($skip)
+                        ->take($range)
+                        ->get();
+                } else {
+                    $data = Order_menu::whereNull("closed_at")
+                        ->orderBy("created_at", "desc")
+                        ->skip($skip)
+                        ->take($range)
+                        ->get();
+                }
+            } else {
+                if (sizeof($filter_date_condition) > 0) {
+                    $data = Order_menu::whereNotNull("closed_at")
+                        ->where($filter_date_condition)
+                        ->orderBy("created_at", "desc")
+                        ->skip($skip)
+                        ->take($range)
+                        ->get();
+                } else {
+                    $data = Order_menu::whereNotNull("closed_at")
+                        ->orderBy("created_at", "desc")
+                        ->skip($skip)
+                        ->take($range)
+                        ->get();
+                }
+            }
+
             return response(OrderResource::collection($data));
-            //return response($orders);
         } catch (\Exception $exc) {
             Log::error($exc->getMessage());
             return response(['message' => 'Qualcosa è andato storto, riprova'], \Illuminate\Http\Response::HTTP_BAD_REQUEST);
@@ -409,19 +449,17 @@ class AdminController extends Controller
 
         try {
             $orders = [];
-            if (isset($request->start_from)) {
+            if (!empty($request->start_from)) {
                 $orders = Order_menu::whereNull("closed_at")
-                    ->select("code", "created_at", "client_id")
+                    ->select("id", "code", "created_at", "client_id")
                     ->orderBy("created_at", "desc")
-                    ->groupBy("code","created_at","client_id")
                     ->skip($request->start_from)
                     ->take(50)
                     ->get();
             } else {
                 $orders = Order_menu::whereNull("closed_at")
-                    ->select("code", "created_at", "client_id")
+                    ->select("id", "code", "created_at", "client_id")
                     ->orderBy("created_at", "desc")
-                    ->groupBy("code","created_at","client_id")
                     ->limit(100)
                     ->get();
             }
@@ -429,31 +467,95 @@ class AdminController extends Controller
             return response(OrderMenuResource::collection($orders));
         } catch (\Exception $exc) {
             Log::error($exc->getMessage());
-            return response(['message' => 'Qualcosa è andato storto, riprova', "exception" =>$exc->getMessage()], \Illuminate\Http\Response::HTTP_BAD_REQUEST);
+            return response(['message' => 'Qualcosa è andato storto, riprova', "exception" => $exc->getMessage()], \Illuminate\Http\Response::HTTP_BAD_REQUEST);
         }
     }
 
+    public function scanProduct(Request $request)
+    {
+        $validate = $request->validate([
+            "barcode" => "required|string|max:30",
+        ]);
+
+        try {
+            DB::beginTransaction();
+            $product = ProductInstance::where("barcode", $request->barcode)->first();
+            if (!isset($product))
+                return response(["message" => "codice non esistente"], \Illuminate\Http\Response::HTTP_BAD_REQUEST);
+
+            if (isset($product->scanned_at))
+                return response(["message" => "Codice già scansionato"], \Illuminate\Http\Response::HTTP_BAD_REQUEST);
+
+            $product->update(
+                [
+                    "scanned_at" => Carbon::now()->format("Y-m-d"),
+                    "operator" => Auth::user()->badge
+                ],
+            );
+            $otherProducts = ProductInstance::where("order", $product->order)->whereNull("scanned_at")->first();
+            if (!isset($otherProducts)) {
+                Order_menu::find($product->order)->update(["closed_at" => Carbon::now()->format("Y-m-d")]);
+            }
+            DB::commit();
+            return response(["state" => 1]);
+        } catch (\Exception $exc) {
+            Log::error($exc->getMessage());
+            return response(['message' => "Qualcosa è andato storto, riprova", "exception" => $exc->getMessage()], \Illuminate\Http\Response::HTTP_BAD_REQUEST);
+        }
+    }
 
 
     public function getOpenProductsInstance(Request $request)
     {
         $validate = $request->validate([
-            "order" => "required|string",
+            "order" => "required|string|max:6",
             "start_from" => "sometimes|nullable|integer",
+            "page" => "sometimes|nullable|integer|min:1"
         ]);
 
         try {
             $productsInstances = [];
+            $order = Order_menu::where("code", $request->order)->first();
             if (isset($request->start_from)) {
                 $productsInstances = ProductInstance::where([
-                    ["order", $request->order],
-                ])->orderBy("scanned_at", "asc")->skip($request->start_from)->take(100)->get();
+                    ["order", $order->id],
+                    ["page", $request->page ? $request->page : 1]
+                ])->orderBy("scanned_at", "asc")->skip($request->start_from)->take(150)->get();
             } else {
                 $productsInstances = ProductInstance::where([
-                    ["order", $request->order],
-                ])->orderBy("scanned_at", "asc")->limit(100)->get();
+                    ["order", $order->id],
+                    ["page", $request->page ? $request->page : 1]
+                ])->orderBy("scanned_at", "asc")->limit(150)->get();
             }
-            return response(ProductIntsanceResource::collection($productsInstances));
+            if (isset($request->page))
+                return response(ProductIntsanceResource::collection($productsInstances));
+            else
+                return response(["products" => ProductIntsanceResource::collection($productsInstances), "limitPage" => ProductInstance::where("order", $order->id)->max("page")]);
+        } catch (\Exception $exc) {
+            Log::error($exc->getMessage());
+            return response(['message' => "Qualcosa è andato storto, riprova", "exception" => $exc->getMessage()], \Illuminate\Http\Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    public function getProductsInstanceByFilter(Request $request)
+    {
+        $validate = $request->validate([
+            "order" => "required|string|max:6",
+            "filter" => "required|string"
+        ]);
+
+        try {
+            $order = Order_menu::where("code", $request->order)->first();
+            $productsInstances = DB::table("product_instance")
+                ->where("order", $order->id)
+                ->join("products", "product_instance.product_id", '=', "products.id")
+                ->join("orders_menu", "product_instance.order", '=', 'orders_menu.id')
+                ->select("product_instance.id", "products.nome as prodotto", "product_instance.barcode", "product_instance.created_at as creato_il", "product_instance.scanned_at as scanned_at")
+                ->where("products.nome", 'like', $request->filter . '%')
+                ->orderBy("products.nome")
+                ->get();
+
+            return response($productsInstances);
         } catch (\Exception $exc) {
             Log::error($exc->getMessage());
             return response(['message' => "Qualcosa è andato storto, riprova", "exception" => $exc->getMessage()], \Illuminate\Http\Response::HTTP_BAD_REQUEST);

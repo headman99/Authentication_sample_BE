@@ -18,11 +18,19 @@ return new class extends Migration
             $table->foreignId('product_id')->constrained('products')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
-            $table->string("order")->min(6)->max(6);
-            $table->foreign("order")->references("code")->on("orders_menu")
+            $table->foreignId('order')->constrained('orders_menu')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
             $table->string('barcode')->unique()->max(30);
+            
+
+            $table->string("operator")->min(8)->max(8)->nullable();
+
+            $table->foreign("operator")
+                ->references("badge")
+                ->on("users")
+                ->onDelete("cascade")
+                ->onUpdate("cascade");
             $table->timestamps();
             $table->timestamp('scanned_at')->nullable()->default(null);
         });

@@ -52,6 +52,9 @@ Route::group(['middleware' => ['admin', 'auth:sanctum']], function () {
     Route::post("/admin/getOrdersListByDate" , [AdminController::class, "getOrdersListByDate"] );
     Route::post("/admin/getOpenProductsInstance",[AdminController::class, "getOpenProductsInstance"]);
     Route::post("/admin/getOrderListCodes",[AdminController::class, "getOrderListCodes"]);
+    Route::post("admin/scanProduct", [AdminController::class,"scanProduct"]);
+    Route::post("admin/getProductsInstanceByFilter", [AdminController::class,"getProductsInstanceByFilter"]);
+    
 });
 
 /*** CLIENT ***/

@@ -13,13 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('users', function (Blueprint $table) {
-            $table->id();
-            $table->string('username')->unique();
-            $table->string('badge')->unique()->nullable()->min(8)->max(8);
-            $table->string('password');
-            $table->rememberToken();
-            $table->timestamps();
+        Schema::table('product_instance', function (Blueprint $table) {
+            $table->integer("page")->unsigned()->min(1);
         });
     }
 
@@ -30,6 +25,8 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('users');
+        Schema::table('product_instance', function (Blueprint $table) {
+            //
+        });
     }
 };

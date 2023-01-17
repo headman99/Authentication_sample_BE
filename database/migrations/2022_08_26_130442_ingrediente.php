@@ -18,6 +18,13 @@ return new class extends Migration
             $table->string('name',255)->unique()->max(100);
             $table->string('description')->nullable();
             $table->string('category')->nullable();
+            $table->string("operator")->min(8)->max(8);
+            
+            $table->foreign("operator")
+                ->references("badge")
+                ->on("users")
+                ->onDelete("cascade")
+                ->onUpdate("cascade");
             $table->timestamps();
         });
     }

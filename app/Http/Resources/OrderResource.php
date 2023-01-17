@@ -17,13 +17,13 @@ class OrderResource extends JsonResource
     public function toArray($request)
     {
         return [
-            "id" =>$this->id,
-            "menu_id" => $this->menu_id,
-            "code" => $this->code,
             "client" => User::find($this->client_id)->username,
+            "code" => $this->code,
+            "created_at" => Carbon::parse($this->created_at)->format('d/m/Y'),
+            "event_date" => $this->event_date,
+            "menu_id" => $this->menu_id,    
             "quantity" =>$this->quantity,
             "richiesta" => $this->richiesta,
-            "created_at" => Carbon::parse($this->created_at)->format('d/m/Y H:i:s')
         ];
     }
 }

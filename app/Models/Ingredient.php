@@ -27,7 +27,7 @@ class Ingredient extends Model
         'description',
         'category',
         'created_at',
-        'updated_at'
+        'updated_at',
     ];
 
 
