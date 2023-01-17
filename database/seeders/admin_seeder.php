@@ -15,6 +15,6 @@ class admin_seeder extends Seeder
      */
     public function run()
     {
-        
+       
     }
 }

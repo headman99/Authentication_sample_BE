@@ -55,11 +55,20 @@ class AuthController extends Controller
             $password = Hash::make($request->password);
             $username = $request->username;
 
+            $randomBadge = '';
+            do{
+                $min = 10000000; // numero minimo
+                $max = 99999999; // numero massimo
+                $randomNumber = random_int($min, $max); // numero casuale compreso tra $min e $max
+                $randomBadge = str_pad($randomNumber, 8, '0', STR_PAD_LEFT); // stringa numerica casuale di lunghezza massima 8
+            }while(User::where("badge",$randomBadge)->first()!=null);
+
             $user = User::create([
                 'username' => $username,
+                'badge' => $randomBadge,
                 'password' => $password,
                 'api_token' => hash('sha256', Str::random(60)),
-                'isadmin' => true
+                'isadmin' => 1,
             ]);
 
             return response(['user' => new UserResource($user)]);

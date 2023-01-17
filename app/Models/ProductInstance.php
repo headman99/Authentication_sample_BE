@@ -27,7 +27,9 @@ class ProductInstance extends Model
         'order',
         'created_at',
         'updated_at',
-        'scanned_at'
+        'scanned_at',
+        'page',
+        "operator"
     ];
 
     public function product(){

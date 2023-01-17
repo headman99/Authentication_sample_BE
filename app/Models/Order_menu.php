@@ -22,6 +22,7 @@ class Order_menu extends Model
         "code",
         "menu_id",
         "client_id",
+        "event_date",
         "quantity",
         "richiesta",
         "created_at",
