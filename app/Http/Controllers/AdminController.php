@@ -25,24 +25,22 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
-use PHPUnit\TextUI\XmlConfiguration\Groups;
 
-use function PHPUnit\Framework\isEmpty;
-use function PHPUnit\Framework\isNull;
 
 class AdminController extends Controller
 {
     public function registerIngredient(Request $request)
     {
         $validate = $request->validate([
-            'name' => 'required|max:100|string',
+            'name' => 'required|max:50|string',
             'description' => 'sometimes|nullable|string|max:250',
             'quantity' => 'required|integer',
-            'category' => 'sometimes|nullable|string|max:20'
+            'category' => 'sometimes|nullable|string|max:20',
+            'provider' => 'sometimes|nullable|string|max:50'
         ]);
 
         try {
-            DB::beginTransaction();
+            
             $checkValidity = Ingredient::where('name', $request->name)->first();
             if ($checkValidity)
                 return response(['message' => 'Inserisci un nome diverso da quelli già presenti'], \Illuminate\Http\Response::HTTP_BAD_REQUEST);
@@ -52,11 +50,10 @@ class AdminController extends Controller
                 'quantity' => $request->quantity
             ]);
 
-            DB::commit();
             return response(new IngredientResource($ingredient));
         } catch (\Exception $exc) {
             Log::error($exc->getMessage());
-            return response(['message' => 'Qualcosa è andato storto, riprova'], \Illuminate\Http\Response::HTTP_BAD_REQUEST);
+            return response(['message' => 'Qualcosa è andato storto, riprova', "error" => $exc->getMessage()], \Illuminate\Http\Response::HTTP_BAD_REQUEST);
         }
     }
 
@@ -169,7 +166,7 @@ class AdminController extends Controller
     {
         $stoks = DB::table('stoks')
             ->join('ingredients', 'ingredient_id', '=', 'ingredients.id')
-            ->select('ingredient_id as id', 'ingredients.name', 'stoks.quantity', 'ingredients.description', 'ingredients.category', 'stoks.updated_at')
+            ->select('ingredient_id as id', 'ingredients.name', 'stoks.quantity', 'ingredients.category', "ingredients.provider",'stoks.updated_at')
             ->orderBy('ingredients.name')
             ->get();
         return $stoks;

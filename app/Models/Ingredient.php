@@ -26,6 +26,7 @@ class Ingredient extends Model
         'name',
         'description',
         'category',
+        'provider',
         'created_at',
         'updated_at',
     ];
