@@ -28,7 +28,6 @@ class Product extends Model
         'descrizione',
         'categoria',
         'gruppo',
-        'barcode',
         'created_at',
         'updated_at'
     ];

@@ -13,12 +13,9 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('ingredients', function(Blueprint $table){
+        Schema::create('teams', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique()->max(50);
-            $table->string('category')->nullable()->max(20)->default(NULL);
-            $table->string("provider")->max(50)->nullable()->default(NULL);
-            $table->foreignId("team")->nullable()->default(NULL)->constrained("teams")->onDelete("set null")->onUpdate("cascade");
+            $table->string("name")->min(1)->max(50)->unique();
             $table->timestamps();
         });
     }
@@ -30,6 +27,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('ingredients');
+        Schema::dropIfExists('teams');
     }
 };

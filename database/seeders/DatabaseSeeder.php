@@ -22,8 +22,12 @@ class DatabaseSeeder extends Seeder
         // ]);
         $this->call(products_groups_seeder::class);
         $this->call(menu_seeder::class);
+        $this->call(teams_seeder::class);
         $this->call(products_table_seeder::class);
         $this->call(menu_receips_seeder::class);
         $this->call(admin_seeder::class);
+        $this->call(ingredient_sedeer::class);
+        $this->call(stock::class);
+        $this->call(product_recipes_seeder::class);
     }
 }

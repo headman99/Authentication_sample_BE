@@ -7,8 +7,13 @@ use App\Http\Resources\MenuPaginateResource;
 use App\Http\Resources\MenuRecipeResource;
 use App\Http\Resources\OrderMenuResource;
 use App\Http\Resources\OrderResource;
+use App\Http\Resources\StockResource;
 use App\Http\Resources\ProductIntsanceResource;
+use App\Http\Resources\ProductListByOrderResource;
 use App\Http\Resources\ProductResource;
+use App\Http\Resources\TeamIngredientResource;
+use App\Http\Resources\TeamIngredientsByProductRecipe;
+use App\Http\Resources\TeamResource;
 use App\Models\Ingredient;
 use App\Models\Menu;
 use App\Models\MenuRecipe;
@@ -17,6 +22,7 @@ use App\Models\Product;
 use App\Models\ProductInstance;
 use App\Models\ProductReceips;
 use App\Models\Stoks;
+use App\Models\Team;
 use App\Models\User;
 use Carbon\Carbon;
 use Hamcrest\Arrays\IsArray;
@@ -26,6 +32,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
+use function PHPUnit\Framework\isEmpty;
 
 class AdminController extends Controller
 {
@@ -34,20 +41,21 @@ class AdminController extends Controller
         $validate = $request->validate([
             'name' => 'required|max:50|string',
             'description' => 'sometimes|nullable|string|max:250',
-            'quantity' => 'required|integer',
+            'quantity' => 'required|integer|min:0',
             'category' => 'sometimes|nullable|string|max:20',
-            'provider' => 'sometimes|nullable|string|max:50'
+            'provider' => 'sometimes|nullable|string|max:50',
+            "team" => "sometimes|nullable|integer"
         ]);
 
         try {
-            
+
             $checkValidity = Ingredient::where('name', $request->name)->first();
             if ($checkValidity)
                 return response(['message' => 'Inserisci un nome diverso da quelli già presenti'], \Illuminate\Http\Response::HTTP_BAD_REQUEST);
             $ingredient = Ingredient::create($validate);
             Stoks::create([
                 'ingredient_id' => $ingredient->id,
-                'quantity' => $request->quantity
+                'quantity' => $request->quantity ? $request->quantity : 0,
             ]);
 
             return response(new IngredientResource($ingredient));
@@ -121,7 +129,7 @@ class AdminController extends Controller
             DB::beginTransaction();
             foreach ($request->data as $obj) {
                 //$ingredient = Ingredient::where('name', $obj['ingredient'])->first();
-                Stoks::where('ingredient_id', $obj['ingredient'])->update(['quantity' => $obj['quantity']]);
+                Stoks::where('ingredient_id', $obj['ingredient'])->update(['quantity' => $obj['quantity'] ? $obj['quantity'] : 0]);
             }
             DB::commit();
             return response(['state' => 1], \Illuminate\Http\Response::HTTP_OK);
@@ -158,18 +166,23 @@ class AdminController extends Controller
 
     public function getProductsCatalog()
     {
-        $catalog = Product::select('id', 'nome', 'categoria', 'gruppo', 'descrizione')->orderBy("nome")->get();
-        return $catalog;
+        try {
+            $catalog = Product::orderBy("nome")->get();
+            return (ProductResource::collection($catalog));
+        } catch (\Exception $exc) {
+            Log::error($exc->getMessage());
+            return response(['message' => 'Qualcosa è andato storto, riprova'], \Illuminate\Http\Response::HTTP_BAD_REQUEST);
+        }
     }
 
     public function getStock()
     {
         $stoks = DB::table('stoks')
             ->join('ingredients', 'ingredient_id', '=', 'ingredients.id')
-            ->select('ingredient_id as id', 'ingredients.name', 'stoks.quantity', 'ingredients.category', "ingredients.provider",'stoks.updated_at')
+            ->select('ingredient_id as id', 'ingredients.name', 'stoks.quantity', 'ingredients.category', "ingredients.provider", "ingredients.team")
             ->orderBy('ingredients.name')
             ->get();
-        return $stoks;
+        return (StockResource::collection($stoks));
     }
 
     public function removeProduct(Request $request)
@@ -190,10 +203,8 @@ class AdminController extends Controller
     {
         $validate = $request->validate([
             'nome' => 'required|max:100|string',
-            'descrizione' => 'nullable|sometimes|string|max:250',
-            'peso' => 'sometimes|integer',
             'categoria' => 'nullable|sometimes|string|max:10',
-            'gruppo' => "nullable|string|sometimes"
+            'gruppo' => "nullable|string|sometimes",
         ]);
 
         try {
@@ -201,6 +212,7 @@ class AdminController extends Controller
             $checkValidity = Product::where('nome', $request->nome)->first();
             if ($checkValidity)
                 return response(['message' => 'Inserisci un nome diverso da quelli già presenti'], \Illuminate\Http\Response::HTTP_BAD_REQUEST);
+
             $product = Product::create($validate);
             DB::commit();
             return response([new ProductResource($product)]);
@@ -209,6 +221,8 @@ class AdminController extends Controller
             return response(['message' => 'Qualcosa è andato storto, riprova'], \Illuminate\Http\Response::HTTP_BAD_REQUEST);
         }
     }
+
+
 
     public function getProductGroups()
     {
@@ -220,6 +234,7 @@ class AdminController extends Controller
             return response(['message' => 'Qualcosa è andato storto, riprova'], \Illuminate\Http\Response::HTTP_BAD_REQUEST);
         }
     }
+
 
     public function addMenuRecipe(Request $request)
     {
@@ -553,6 +568,294 @@ class AdminController extends Controller
                 ->get();
 
             return response($productsInstances);
+        } catch (\Exception $exc) {
+            Log::error($exc->getMessage());
+            return response(['message' => "Qualcosa è andato storto, riprova", "exception" => $exc->getMessage()], \Illuminate\Http\Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    public function getTeams(Request $request)
+    {
+        $teams = Team::orderby('name')->get();
+        return response(TeamResource::collection($teams));
+    }
+
+    //This takes the productsInstances
+    public function getTeamProductListByOrder(Request $request)
+    {
+        $validate = $request->validate([
+            "order" => "required|string",
+            "team_id" => "sometimes|nullable"
+        ]);
+        try {
+            
+            $order = Order_menu::where("code", $request->order)->first();
+            
+           /*$products = DB::table("ingredients")
+                ->where("ingredients.team",$request->team_id)
+                ->join("products_recipes", "ingredients.id",'=','products_recipes.ingredient_id')
+                ->select("products_recipes.product_id as product_id")
+                ->groupBy("products_recipes.product_id")
+                ->get();*/
+            $ingredients = Ingredient::where("team",$request->team_id)->get()->pluck('id');
+            $prods = ProductReceips::whereIn("ingredient_id",$ingredients)->select("product_id")->groupby("product_id")->get();
+
+            $productsInstances = ProductInstance::where("order", $order->id)
+                ->whereIn("product_id",$prods)
+                ->select("product_id", "order", DB::raw('count(*) as quantity'), DB::raw('CASE WHEN SUM(CASE WHEN checked = true THEN 1 ELSE 0 END) = COUNT(*) THEN true ELSE false END as final_check'))
+                ->groupBy("product_id", "order")
+                ->get();
+
+           
+            //return response(["data" => $products], \Illuminate\Http\Response::HTTP_BAD_REQUEST);
+            return (ProductListByOrderResource::collection($productsInstances));
+        } catch (\Exception $exc) {
+            Log::error($exc->getMessage());
+            return response(['message' => "Qualcosa è andato storto, riprova", "exception" => $exc->getMessage()], \Illuminate\Http\Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    /*public function getProductstByTeam(Request $request)
+    {
+        $validate = $request->validate([
+            "team_id" => "required|integer",
+        ]);
+        try {
+            $products = Product::where("team",$request->team_id)->get();
+            return response(ProductResource::collection($products));
+        } catch (\Exception $exc) {
+            Log::error($exc->getMessage());
+            return response(['message' => "Qualcosa è andato storto, riprova", "exception" => $exc->getMessage()], \Illuminate\Http\Response::HTTP_BAD_REQUEST);
+        }
+    }*/
+
+    public function getIngredientsTeam(Request $request)
+    {
+        $validate = $request->validate([
+            "team_id" => "required|integer",
+        ]);
+        try {
+            $products = Ingredient::where("team", $request->team_id)->get();
+            return response(IngredientResource::collection($products));
+        } catch (\Exception $exc) {
+            Log::error($exc->getMessage());
+            return response(['message' => "Qualcosa è andato storto, riprova", "exception" => $exc->getMessage()], \Illuminate\Http\Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    public function checkProductList(Request $request)
+    {
+        $validate = $request->validate([
+            "order" => "required|integer",
+            "product_id" => "required|integer",
+            "value" => "required|boolean"
+        ]);
+
+        try {
+            DB::beginTransaction();
+            ProductInstance::where([
+                ["product_id", $request->product_id],
+                ["order", $request->order],
+            ])->update(['checked' => $request->value]);
+            DB::commit();
+            return (["state" => 1]);
+        } catch (\Exception $exc) {
+            Log::error($exc->getMessage());
+            return response(['message' => "Qualcosa è andato storto, riprova", "exception" => $exc->getMessage()], \Illuminate\Http\Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+
+    public function updateIngredient(Request $request)
+    {
+        $validate = $request->validate([
+            "id" => "required|integer",
+            "name" => "sometimes|string",
+            "category" => "sometimes|nullable|string",
+            "provider" => "sometimes|nullable|string",
+            "quantity" => "sometimes|nullable|integer",
+            "team" => "sometimes|nullable|string"
+        ]);
+
+        try {
+            DB::beginTransaction();
+            $name = Ingredient::where([
+                ["name", $request->name],
+                ["id", '<>', $request->id]
+            ])->first();
+
+            if ($name)
+                return response(['message' => "Nome Ingrediente già presente, sceglierne un altro"], \Illuminate\Http\Response::HTTP_BAD_REQUEST);
+
+            Ingredient::find($request->id)->update([
+                "name" => $request->name ? $request->name : $name->name,
+                "category" => $request->category,
+                "provider" => $request->provider,
+                "team" => $request->team ? Team::where("name", $request->team)->first()->id : NULL
+            ]);
+
+            if (isset($request->quantity))
+                Stoks::where("ingredient_id", $request->id)->update(["quantity" => $request->quantity ? $request->quantity : 0]);
+            DB::commit();
+            return (["state" => 1]);
+        } catch (\Exception $exc) {
+            Log::error($exc->getMessage());
+            return response(['message' => "Qualcosa è andato storto, riprova", "exception" => $exc->getMessage()], \Illuminate\Http\Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    public function updateProduct(Request $request)
+    {
+        $validate = $request->validate([
+            "id" => "required|integer",
+            "nome" => "sometimes|string",
+            "categoria" => "sometimes|nullable|string",
+            "gruppo" => "sometimes|nullable|string",
+        ]);
+
+        try {
+            DB::beginTransaction();
+            $name = Product::where([
+                ["nome", $request->nome],
+                ["id", '<>', $request->id]
+            ])->first();
+
+            if ($name)
+                return response(['message' => "Nome Prodotto già presente, sceglierne un altro"], \Illuminate\Http\Response::HTTP_BAD_REQUEST);
+
+            Product::find($request->id)->update([
+                "nome" => $request->nome,
+                "categoria" => $request->categoria,
+                "gruppo" => $request->gruppo,
+            ]);
+
+            DB::commit();
+            return (["state" => 1]);
+        } catch (\Exception $exc) {
+            Log::error($exc->getMessage());
+            return response(['message' => "Qualcosa è andato storto, riprova", "exception" => $exc->getMessage()], \Illuminate\Http\Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    public function removeTeam(Request $request)
+    {
+        $validate = $request->validate([
+            "id" => "required|integer",
+        ]);
+
+        try {
+            Team::find($request->id)->delete();
+            return (["state" => 1]);
+        } catch (\Exception $exc) {
+            Log::error($exc->getMessage());
+            return response(['message' => "Qualcosa è andato storto, riprova", "exception" => $exc->getMessage()], \Illuminate\Http\Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    public function updateTeam(Request $request)
+    {
+        $validate = $request->validate([
+            "id" => "required|integer",
+            "name" => "nullable|sometimes|string",
+        ]);
+
+        try {
+
+            $team = Team::where("id", $request->id)->update(["name" => $request->name]);
+            return (["state" => 1]);
+        } catch (\Exception $exc) {
+            Log::error($exc->getMessage());
+            return response(['message' => "Qualcosa è andato storto, riprova", "exception" => $exc->getMessage()], \Illuminate\Http\Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    public function addTeam(Request $request)
+    {
+        $validate = $request->validate([
+            "name" => "required|string",
+        ]);
+
+        try {
+            Team::create($validate);
+            return (["state" => 1]);
+        } catch (\Exception $exc) {
+            Log::error($exc->getMessage());
+            return response(['message' => "Qualcosa è andato storto, riprova", "exception" => $exc->getMessage()], \Illuminate\Http\Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    /*public function updateProductsTeam(Request $request){
+        Validator::make($request->all(),[
+            "team_id" => "required|integer",
+            "add_products_id" => "array",
+            "remove_products_id" => "array"
+        ]);
+
+        try {
+            DB::beginTransaction();
+            if(!empty($request->add_products_id))
+                Product::whereIn("id",$request->add_products_id)->update(["team" => $request->team_id]);
+            if(!empty($request->remove_products_id))
+                Product::whereIn("id",$request->remove_products_id)->update(["team" => NULL]);
+            DB::commit();
+            return (["state" => 1]);
+        } catch (\Exception $exc) {
+            Log::error($exc->getMessage());
+            return response(['message' => "Qualcosa è andato storto, riprova", "exception" => $exc->getMessage()], \Illuminate\Http\Response::HTTP_BAD_REQUEST);
+        }
+    }*/
+    public function updateIngredientsTeam(Request $request)
+    {
+        Validator::make($request->all(), [
+            "team_id" => "required|integer",
+            "add_ingredients_id" => "array",
+            "remove_ingredients_id" => "array"
+        ]);
+
+        try {
+            DB::beginTransaction();
+            if (!empty($request->add_ingredients_id))
+                Ingredient::whereIn("id", $request->add_ingredients_id)->update(["team" => $request->team_id]);
+            if (!empty($request->remove_ingredients_id))
+                Ingredient::whereIn("id", $request->remove_ingredients_id)->update(["team" => NULL]);
+            DB::commit();
+            return (["state" => 1]);
+        } catch (\Exception $exc) {
+            Log::error($exc->getMessage());
+            return response(['message' => "Qualcosa è andato storto, riprova", "exception" => $exc->getMessage()], \Illuminate\Http\Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    public function getTeamIngredientsByProductRecipe(Request $request)
+    {
+        $validate = $request->validate([
+            "product_id" => "required|integer",
+            "team_id" => "sometimes|nullable|integer"
+        ]);
+
+        try {
+            /*$recipes = ProductReceips::where("product_id",$request->product_id)->get()->pluck("product_id");
+            $ingredients = Ingredient::where("team",$request->team_id)
+                ->whereIn("id",$recipes)
+                ->get();*/
+            $ingredients = [];
+            if ($request->team_id)
+                $ingredients = DB::table("products_recipes")
+                    ->where("product_id", $request->product_id)
+                    ->join("ingredients", "products_recipes.ingredient_id", '=', 'ingredients.id')
+                    ->where("ingredients.team", $request->team_id)
+                    ->select("ingredients.id as id", "ingredients.name as name", "products_recipes.quantity as quantity")
+                    ->orderBy("ingredients.name")
+                    ->get();
+            else
+                $ingredients = DB::table("products_recipes")
+                    ->where("product_id", $request->product_id)
+                    ->join("ingredients", "products_recipes.ingredient_id", '=', 'ingredients.id')
+                    ->select("ingredients.id as id", "ingredients.name as name", "products_recipes.quantity as quantity")
+                    ->orderBy("ingredients.name")
+                    ->get();
+
+            return (TeamIngredientsByProductRecipe::collection($ingredients));
         } catch (\Exception $exc) {
             Log::error($exc->getMessage());
             return response(['message' => "Qualcosa è andato storto, riprova", "exception" => $exc->getMessage()], \Illuminate\Http\Response::HTTP_BAD_REQUEST);

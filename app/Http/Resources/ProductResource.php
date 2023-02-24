@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Team;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class ProductResource extends JsonResource
@@ -16,8 +17,7 @@ class ProductResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'nome' => $this->nome,
-            'peso' =>$this->peso,
+            'nome' => $this->nome, 
             'categoria' => $this->categoria,
             'gruppo'=>$this->gruppo,
         ];

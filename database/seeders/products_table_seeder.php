@@ -282,7 +282,7 @@ class products_table_seeder extends Seeder
             $product = new Product(["nome"=>"Finger polpo su spinacino novello, pomodorino semi dry e olive taggiasche","peso"=>"","gruppo"=>"PESCE","descrizione"=>"","barcode"=>"ho\Wj4wGgPNNHWw`ZP?b>cL?xs`b0C","categoria"=>""]);$product->save();
             $product = new Product(["nome"=>"Gamberi in panur croccante","peso"=>"","gruppo"=>"PESCE","descrizione"=>"","barcode"=>"Wt?_G{ReKJQkhkm^NsZIn2iUPH^ogV","categoria"=>""]);$product->save();
             $product = new Product(["nome"=>"Baccalà norvegese in farina gialla","peso"=>"","gruppo"=>"PESCE","descrizione"=>"","barcode"=>"_[WXZ0FhYSy]Map3c3V@Q^9i~Zu9gE","categoria"=>""]);$product->save();
-            $product = new Product(["nome"=>"Mischiato potente con crema di piselli e pecorino, olio alla mentuccia e basilico","peso"=>"","gruppo"=>"ORTAGGI","descrizione"=>"","barcode"=>"IXAPNvtfBnY<u?PWqBZ3BOMn_uI>ia","categoria"=>""]);$product->save();
+            $product = new Product(["nome"=>"Mischiato potente con crema di piselli e pecorino, olio alla mentuccia e basilico","peso"=>"","gruppo"=>"ORTAGGI","descrizione"=>"","barcode"=>"IXAPNvtfBnY<u?PWqBZ3BOMn_uI>ia","categoria"=>"",]);$product->save();
             $product = new Product(["nome"=>"Raviolone ripieno di Cernia in guazzetto del pescatore e olio al Basilico","peso"=>"","gruppo"=>"PASTA","descrizione"=>"","barcode"=>"pal0IaSl7aijjTLF^6g>CJ[fHt|PJ=","categoria"=>""]);$product->save();
             $product = new Product(["nome"=>"Riso Carnaroli mantecato con Carciofi, guanciale di maiale razza casertano e fonduta di pecorino bagnolese","peso"=>"","gruppo"=>"PASTA","descrizione"=>"","barcode"=>"_K6L<LCyA]`Hj6T^E8_YGWc9Cdxu72","categoria"=>""]);$product->save();
             $product = new Product(["nome"=>"Darna di ombrina con cremoso di patata viola flan di carote e salsa a lime","peso"=>"","gruppo"=>"CARNE","descrizione"=>"","barcode"=>"KWn:maFWc{<E19uvsRk;C~H_ZO78CL","categoria"=>""]);$product->save();
@@ -314,8 +314,6 @@ class products_table_seeder extends Seeder
             $product = new Product(["nome"=>"Tartare di salmone marinato e burrata su bisquit salato al nero di seppia","peso"=>"","gruppo"=>"PESCE","descrizione"=>"","barcode"=>"uMNsqBMLU%bfxp_NlNn7PL41%Nz5_3","categoria"=>""]);$product->save();
             $product = new Product(["nome"=>"Cornucopia di sfoglia ai semi con mousse di tonno","peso"=>"","descrizione"=>"","barcode"=>"3WY3Tv9^fths1V9JPDSgXHFI!a%cxL","categoria"=>""]);$product->save();
             $product = new Product(["nome"=>"Fritturina di terra con Stick di Scagnuzziello","peso"=>"","descrizione"=>"","barcode"=>"L#S^ik19II8s&a7Zlb25gV9xK&SXPB","categoria"=>""]);$product->save();
-            $product = new Product(["nome"=>"Gli oli evo classici e aromatizzati con tocchetti pane casereccio e pane bianco","peso"=>"","descrizione"=>"","barcode"=>"XxMHrwzlUEqrkEfkJ9gGdkFDc7DSPO","categoria"=>""]);$product->save();
-            
-                 
+            $product = new Product(["nome"=>"Gli oli evo classici e aromatizzati con tocchetti pane casereccio e pane bianco","peso"=>"","descrizione"=>"","barcode"=>"XxMHrwzlUEqrkEfkJ9gGdkFDc7DSPO","categoria"=>""]);$product->save(); 
     }
 }

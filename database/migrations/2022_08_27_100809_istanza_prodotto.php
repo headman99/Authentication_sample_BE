@@ -22,7 +22,6 @@ return new class extends Migration
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
             $table->string('barcode')->unique()->max(30);
-            
 
             $table->string("operator")->min(8)->max(8)->nullable();
 
@@ -30,7 +29,7 @@ return new class extends Migration
                 ->references("badge")
                 ->on("users")
                 ->onDelete("cascade")
-                ->onUpdate("cascade");
+                ->onUpdate("set null");
             $table->timestamps();
             $table->timestamp('scanned_at')->nullable()->default(null);
         });

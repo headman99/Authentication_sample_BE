@@ -54,8 +54,19 @@ Route::group(['middleware' => ['admin', 'auth:sanctum']], function () {
     Route::post("/admin/getOrderListCodes",[AdminController::class, "getOrderListCodes"]);
     Route::post("admin/scanProduct", [AdminController::class,"scanProduct"]);
     Route::post("admin/getProductsInstanceByFilter", [AdminController::class,"getProductsInstanceByFilter"]);
-    
-});
+    Route::get("admin/getTeams", [AdminController::class,"getTeams"]);
+    //Route::post("admin/getProductListByTeam", [AdminController::class,"getProductListByTeam"]);
+    Route::post("admin/checkProductList", [AdminController::class,"checkProductList"]);
+    Route::post("admin/updateIngredient", [AdminController::class,"updateIngredient"]);
+    Route::post("admin/updateProduct", [AdminController::class,"updateProduct"]);
+    Route::post("admin/removeTeam", [AdminController::class,"removeTeam"]);
+    Route::post("admin/updateTeam", [AdminController::class,"updateTeam"]);
+    Route::post("admin/addTeam", [AdminController::class,"addTeam"]);
+    Route::post("admin/getIngredientsTeam", [AdminController::class,"getIngredientsTeam"]);
+    Route::post("admin/updateIngredientsTeam", [AdminController::class,"updateIngredientsTeam"]);
+    Route::post("admin/getTeamProductListByOrder", [AdminController::class,"getTeamProductListByOrder"]);
+    Route::post("admin/getTeamIngredientsByProductRecipe", [AdminController::class,"getTeamIngredientsByProductRecipe"]);
+}); 
 
 /*** CLIENT ***/
 Route::group(['middleware' => ['client', 'auth:sanctum']], function () {

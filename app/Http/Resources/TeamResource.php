@@ -2,10 +2,9 @@
 
 namespace App\Http\Resources;
 
-use App\Models\Team;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class IngredientResource extends JsonResource
+class TeamResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -17,11 +16,7 @@ class IngredientResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'name' => $this->name,
-            'description' =>$this->description,
-            'category' => $this->category,
-            "provider" => $this->provider,
-            "team" => Team::find($this->team)->name
+            "name" => $this->name
         ];
     }
 }
