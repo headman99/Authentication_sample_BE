@@ -22,7 +22,8 @@ class User extends Authenticatable
         'badge',
         'password',
         'api_token',
-        'isadmin'
+        'isadmin',
+        "pending"
     ];
     /**
      * The attributes that should be hidden for serialization.

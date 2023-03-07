@@ -28,6 +28,7 @@ Route::group(['guest'], function () {
     Route::get('/sanctum/csrfToken', [AuthController::class, 'csrfToken']);
     Route::post('/registerAdmin', [AuthController::class, 'registerAdmin'])->middleware('guest');
     Route::post('/registerClient', [AuthController::class, 'registerClient'])->middleware('guest');
+    Route::post("/completeClientRegistration", [AuthController::class,"completeClientRegistration"]); 
 });
 
 
@@ -66,6 +67,22 @@ Route::group(['middleware' => ['admin', 'auth:sanctum']], function () {
     Route::post("admin/updateIngredientsTeam", [AdminController::class,"updateIngredientsTeam"]);
     Route::post("admin/getTeamProductListByOrder", [AdminController::class,"getTeamProductListByOrder"]);
     Route::post("admin/getTeamIngredientsByProductRecipe", [AdminController::class,"getTeamIngredientsByProductRecipe"]);
+    Route::post("admin/getIngredientQuantityByOrder", [AdminController::class,"getIngredientQuantityByOrder"]);
+    Route::post("admin/updateProductRecipe", [AdminController::class,"updateProductRecipe"]);
+    Route::post("admin/deleteIngredientProductRecipe", [AdminController::class,"deleteIngredientProductRecipe"]);
+    Route::post("admin/addProductRecipe", [AdminController::class,"addProductRecipe"]);
+    Route::get("admin/getUsersInfo", [AdminController::class,"getUsersInfo"]);
+    Route::post("admin/changeUserPsw", [AdminController::class,"changeUserPsw"]);
+    Route::post("admin/registerAdmin", [AdminController::class,"registerAdmin"]);
+    Route::post("admin/registerClient", [AdminController::class,"registerClient"]);
+    Route::post("/admin/deleteUser", [AdminController::class,"deleteUser"]);    
+    Route::post("/admin/updateUser", [AdminController::class,"updateUser"]);   
+    Route::post("/admin/getMenuRecipeAlternative", [AdminController::class,"getMenuRecipeAlternative"]);   
+    Route::post("/admin/scanAll", [AdminController::class,"scanAll"]);
+    Route::post("/admin/updateMenuRecipeRatio", [AdminController::class,"updateMenuRecipeRatio"]);        
+    Route::post("/admin/addMenuRecipeGroup", [AdminController::class,"addMenuRecipeGroup"]);
+    Route::post("/admin/createMenu", [AdminController::class, "createMenu"]);        
+    Route::post("/admin/updateMenuActive", [AdminController::class, "updateMenuActive"]);        
 }); 
 
 /*** CLIENT ***/

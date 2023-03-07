@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('menu',function(Blueprint $table){
             $table->id();
             $table->string('nome')->unique()->max(100);
-            $table->string('descrizione')->nullable();
+            $table->string('descrizione')->nullable()->default(NULL);
             $table->boolean('active')->default(true);
             $table->timestamps();
         });

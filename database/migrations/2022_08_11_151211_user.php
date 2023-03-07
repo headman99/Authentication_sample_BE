@@ -17,9 +17,10 @@ return new class extends Migration
             $table->id();
             $table->string('username')->unique();
             $table->string('badge')->unique()->nullable()->min(8)->max(8);
-            $table->string('password');
+            $table->string('password')->nullable();
             $table->rememberToken();
             $table->timestamps();
+            $table->string("pending",4)->nullable()->default(NULL);
         });
     }
 

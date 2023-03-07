@@ -15,13 +15,14 @@ class UserResource extends JsonResource
     public function toArray($request)
     {
 
-        return [
+        $array = [
+            'iduser' => $this->id,
             'username' => $this->username,
             "badge" => $this->badge,
-            'iduser' => $this->id,
-            'api_token' => $this->api_token,
             'isadmin'=>$this->isadmin,
-            
+            "pending" => $this->pending            
         ];
+            
+        return $array;
     }
 }

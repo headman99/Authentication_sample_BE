@@ -2,10 +2,10 @@
 
 namespace App\Http\Resources;
 
-use App\Models\Team;
+use App\Models\Ingredient;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class IngredientResource extends JsonResource
+class IngredientQuantity extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -16,11 +16,8 @@ class IngredientResource extends JsonResource
     public function toArray($request)
     {
         return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'category' => $this->category,
-            "provider" => $this->provider,
-            "team" => Team::find($this->team)->name
+            "ingredient" => Ingredient::find($this->ingredient_id)->name,
+            "quantity" => $this->quantity 
         ];
     }
 }
