@@ -20,6 +20,7 @@ use App\Models\Menu;
 use App\Models\MenuRecipe;
 use App\Models\Order_menu;
 use App\Models\Product;
+use App\Models\ProductGroup;
 use App\Models\ProductInstance;
 use App\Models\ProductReceips;
 use App\Models\Stoks;
@@ -214,6 +215,7 @@ class AdminController extends Controller
             if ($checkValidity)
                 return response(['message' => 'Inserisci un nome diverso da quelli già presenti'], \Illuminate\Http\Response::HTTP_BAD_REQUEST);
 
+            $gruppo = ProductGroup::firstOrCreate(["gruppo" =>$request->gruppo]);
             $product = Product::create($validate);
             DB::commit();
             return response([new ProductResource($product)]);
