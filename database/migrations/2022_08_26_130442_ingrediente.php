@@ -15,16 +15,10 @@ return new class extends Migration
     {
         Schema::create('ingredients', function(Blueprint $table){
             $table->id();
-            $table->string('name',255)->unique()->max(100);
-            $table->string('description')->nullable();
-            $table->string('category')->nullable();
-            $table->string("operator")->min(8)->max(8);
-            
-            $table->foreign("operator")
-                ->references("badge")
-                ->on("users")
-                ->onDelete("cascade")
-                ->onUpdate("cascade");
+            $table->string('name')->unique()->max(50);
+            $table->string('category')->nullable()->max(20)->default(NULL);
+            $table->string("provider")->max(50)->nullable()->default(NULL);
+            $table->foreignId("team")->nullable()->default(NULL)->constrained("teams")->onDelete("set null")->onUpdate("cascade");
             $table->timestamps();
         });
     }

@@ -14,7 +14,7 @@ class ProductReceips extends Model
      *
      * @var string
      */
-    protected $table = 'product_receips';
+    protected $table = 'products_recipes';
 
     /**
      * The attributes that are mass assignable.

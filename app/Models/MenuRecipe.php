@@ -26,6 +26,9 @@ class MenuRecipe extends Model
         'product_id',
         'gruppo',
         'sezione',
+        "alternative",
+        "ratio",
+        "groupPosition",
         'created_at',
         'updated_at'
     ];

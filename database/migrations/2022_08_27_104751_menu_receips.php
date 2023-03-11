@@ -17,9 +17,12 @@ return new class extends Migration
             $table->id();
             $table->foreignId('menu_id')->costrained('menu')->onDelete('cascade')->onUpdate('cascade');
             $table->foreignId('product_id')->costrained('products')->onDelete('cascade')->onUpdate('cascade');
-            $table->string('gruppo')->max(100);
-            $table->string('sezione')->nullabel()->max(100);
-            $table->boolean('extra')->default(false);
+            $table->string('gruppo')->nullable()->max(100);
+            $table->string('sezione')->nullable()->default('')->max(100);
+            $table->integer("extra")->default(0);
+            $table->integer("groupPosition");
+            $table->float("ratio")->default(1);
+            $table->foreignId("alternative")->nullable()->default(NULL)->constrained("products")->onDelete('cascade')->onUpdate("cascade");
             $table->unique(["menu_id","product_id","gruppo","sezione"]);
             $table->timestamps();
         });

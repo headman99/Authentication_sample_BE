@@ -6,6 +6,8 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+use function PHPUnit\Framework\isNull;
+
 class Client
 {
     /**
@@ -17,7 +19,7 @@ class Client
      */
     public function handle(Request $request, Closure $next)
     {
-        if(Auth::user() && Auth::user()->isadmin == 0){
+        if(Auth::user() && Auth::user()->isadmin == 0 && Auth::user()->password){
             return $next($request);
         }
         return redirect('/missing_privileges');

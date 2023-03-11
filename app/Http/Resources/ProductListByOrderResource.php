@@ -2,10 +2,11 @@
 
 namespace App\Http\Resources;
 
-use App\Models\Team;
+use App\Models\Order_menu;
+use App\Models\Product;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class IngredientResource extends JsonResource
+class ProductListByOrderResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -16,11 +17,11 @@ class IngredientResource extends JsonResource
     public function toArray($request)
     {
         return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'category' => $this->category,
-            "provider" => $this->provider,
-            "team" => Team::find($this->team)->name
+            'order' =>$this->order,
+            "id" => $this->product_id,
+            "product" => Product::find($this->product_id)->nome,
+            "quantity" => $this->quantity,
+            "checked" => $this->final_check==1?true:false
         ];
     }
 }

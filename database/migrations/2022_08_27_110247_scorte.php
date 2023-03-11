@@ -15,7 +15,8 @@ return new class extends Migration
     {
         Schema::create('stoks', function (Blueprint $table) {
             $table->foreignId('ingredient_id')->primary()->costrained('ingredients')->onDelete('cascade')->onUpdate('cascade');
-            $table->integer('quantity')->unsigned()->default(0);
+            $table->float('quantity')->unsigned()->default(0)->min(0);
+            $table->boolean("pz")->default(false);
             $table->timestamps();
         });
     }

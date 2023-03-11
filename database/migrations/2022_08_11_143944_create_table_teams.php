@@ -13,8 +13,10 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('product_instance', function (Blueprint $table) {
-            $table->integer("page")->unsigned()->min(1);
+        Schema::create('teams', function (Blueprint $table) {
+            $table->id();
+            $table->string("name")->min(1)->max(50)->unique();
+            $table->timestamps();
         });
     }
 
@@ -25,8 +27,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('product_instance', function (Blueprint $table) {
-            //
-        });
+        Schema::dropIfExists('teams');
     }
 };

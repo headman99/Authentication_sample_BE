@@ -28,6 +28,7 @@ class ProductInstance extends Model
         'created_at',
         'updated_at',
         'scanned_at',
+        'checked',
         'page',
         "operator"
     ];

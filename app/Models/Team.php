@@ -5,16 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Stoks extends Model
+class Team extends Model
 {
     use HasFactory;
+
 
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'stoks';
+    protected $table = 'teams';
 
     /**
      * The attributes that are mass assignable.
@@ -22,19 +23,10 @@ class Stoks extends Model
      * @var array
      */
     protected $fillable = [
-        'ingredient_id',
-        'quantity',
-        "pz",
+        'id',
+        'name',
         'created_at',
         'updated_at'
     ];
 
-
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasOne
-     */
-    public function ingredient_id()
-    {
-        return $this->belongsTo('App\Models\Ingredient', 'ingredient_id', 'id');
-    }
 }

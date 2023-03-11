@@ -18,10 +18,13 @@ class MenuRecipeResource extends JsonResource
     public function toArray($request)
     {
         return [
-            "product" => new ProductResource([$this->product_id]),
+            "id" => $this->id,
+            "nome" => $this->nome,
             "gruppo" => $this->gruppo,
             "sezione" => $this->sezione,
-            "extra"=>$this->extra
+            "alternative"=>$this->alternative?Product::find($this->alternative)->nome:NULL,
+            "ratio" => $this->ratio,
+            "groupPosition" => $this->groupPosition
         ];
     }
 }
