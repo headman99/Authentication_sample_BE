@@ -46,7 +46,8 @@ class AdminController extends Controller
             'quantity' => 'sometimes|nullable|min:0',
             'category' => 'sometimes|nullable|string|max:20',
             'provider' => 'sometimes|nullable|string|max:50',
-            "team" => "sometimes|nullable|integer"
+            "team" => "sometimes|nullable|integer",
+            "pz" => "sometimes|nullable|boolean"
         ]);
 
         try {
@@ -58,6 +59,7 @@ class AdminController extends Controller
             Stoks::create([
                 'ingredient_id' => $ingredient->id,
                 'quantity' => $request->quantity ? $request->quantity : 0,
+                "pz" => $request->pz
             ]);
             DB::commit();
             return response($ingredient);
