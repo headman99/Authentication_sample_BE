@@ -30,6 +30,9 @@ return new class extends Migration
                 ->on("users")
                 ->onDelete("cascade")
                 ->onUpdate("set null");
+
+            $table->boolean("checked")->default(false);
+            $table->integer("page")->unsigned()->min(1);
             $table->timestamps();
             $table->timestamp('scanned_at')->nullable()->default(null);
         });
