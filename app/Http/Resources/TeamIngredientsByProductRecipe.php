@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Stoks;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class TeamIngredientsByProductRecipe extends JsonResource
@@ -14,10 +15,12 @@ class TeamIngredientsByProductRecipe extends JsonResource
      */
     public function toArray($request)
     {
+        $pz = Stoks::where("ingredient_id", $this->id)->first()->pz;
         return [
             "id"=>$this->id,
             "name" => $this->name,
-            "quantity" => $this->quantity
+            "quantity" => $this->quantity,
+            "pz" => $pz===0?false:true
         ];
     }
 }

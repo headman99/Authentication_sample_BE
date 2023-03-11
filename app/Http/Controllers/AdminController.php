@@ -990,11 +990,13 @@ class AdminController extends Controller
             $nuovo = [];
             foreach ($recipes as $key => $value) {
                 $ingredient = Ingredient::find($value['ingredient']);
+                $pz = Stoks::where("ingredient_id", $ingredient->id)->first()->pz;
                 array_push($nuovo, [
                     'ingredient' => $ingredient->name,
                     'quantity' => $value['quantity'] * $order->quantity,
                     "category" => $ingredient->category,
-                    "provider" => $ingredient->provider
+                    "provider" => $ingredient->provider,
+                    "pz" => $pz===1?true:false
                 ]);
             }
 
