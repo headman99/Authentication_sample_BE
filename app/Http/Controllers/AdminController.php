@@ -181,7 +181,7 @@ class AdminController extends Controller
     {
         $stoks = DB::table('stoks')
             ->join('ingredients', 'ingredient_id', '=', 'ingredients.id')
-            ->select('ingredient_id as id', 'ingredients.name', 'stoks.quantity', 'ingredients.category', "ingredients.provider", "ingredients.team")
+            ->select('ingredient_id as id', 'ingredients.name', 'stoks.quantity', 'ingredients.category', "ingredients.provider", "ingredients.team", "stoks.pz")
             ->orderBy('ingredients.name')
             ->get();
         return (StockResource::collection($stoks));
@@ -786,7 +786,8 @@ class AdminController extends Controller
             "category" => "sometimes|nullable|string",
             "provider" => "sometimes|nullable|string",
             "quantity" => "sometimes|nullable",
-            "team" => "sometimes|nullable|string"
+            "team" => "sometimes|nullable|string",
+            "pz" => "sometimes|nullable"
         ]);
 
         try {
@@ -803,13 +804,16 @@ class AdminController extends Controller
                 "name" => $request->name ? $request->name : $name->name,
                 "category" => $request->category,
                 "provider" => $request->provider,
-                "team" => $request->team ? Team::where("name", $request->team)->first()->id : NULL
+                "team" => $request->team ? Team::where("name", $request->team)->first()->id : NULL,
             ]);
 
-            if (isset($request->quantity))
-                Stoks::where("ingredient_id", $request->id)->update(["quantity" => $request->quantity ? $request->quantity : 0]);
+            Stoks::where("ingredient_id",$request->id)->update([
+                "pz" => $request->pz,
+                "quantity" => $request->quantity ? $request->quantity : 0
+            ]);
+            
             DB::commit();
-            return (["state" => 1]);
+            return (["state" => 1, "data" => $request->pz]);
         } catch (\Exception $exc) {
             Log::error($exc->getMessage());
             return response(['message' => "Qualcosa è andato storto, riprova", "exception" => $exc->getMessage()], \Illuminate\Http\Response::HTTP_BAD_REQUEST);

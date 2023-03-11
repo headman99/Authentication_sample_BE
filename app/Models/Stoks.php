@@ -24,6 +24,7 @@ class Stoks extends Model
     protected $fillable = [
         'ingredient_id',
         'quantity',
+        "pz",
         'created_at',
         'updated_at'
     ];

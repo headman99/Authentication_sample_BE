@@ -22,6 +22,7 @@ class StockResource extends JsonResource
             'category'=>$this->category,
             'provider'=>$this->provider,
             'team'=>$this->team?Team::find($this->team)->name:NULL,
+            "pz" => $this->pz===0?false:true
         ];
     }
 }
